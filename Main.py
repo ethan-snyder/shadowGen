@@ -1,19 +1,30 @@
-from passlib.hash import sha512_crypt
 import random
 import string
-import diceware
+from platform import uname
+
+from passlib.hash import sha512_crypt
 import os
 import platform
 import subprocess
 
 # Public vars
-file_name = "shadow.txt"
+file_name = "output/shadow.txt"
+pass_file = "textFiles/pass_file.txt"  # File containing dictionary words
+uname_file = "textFiles/uname_file.txt"  # File containing username words
 
 
 def cli():
     """Main CLI interface for Shadow Generator. Takes input from user regarding the preffered complexity of the password,
     and routes the functionality likewise."""
     print("Welcome to Shadow Generator")
+
+    # Check if wordlist files exist
+    if not os.path.exists(pass_file):
+        print(f"Error: {pass_file} not found. Please create a word list file first.")
+        return
+    if not os.path.exists(uname_file):
+        print(f"Error: {uname_file} not found. Please create a username word list file first.")
+        return
 
     shadow_entries = []
 
@@ -51,7 +62,8 @@ def cli():
                     password = gen_simple_pass(num_words)
                     print(f"Password: {password}")
                     password_hash = gen_hash(password)
-                    username = input("Please enter a username: ").strip()
+                    username = gen_username()
+                    print(f"Username: {username}")
                     shadow_entry = f"{username}:{password_hash}"
                     shadow_entries.append(shadow_entry)
 
@@ -78,9 +90,50 @@ def gen_pass_random(pass_len):
 
 
 def gen_simple_pass(num_words=2):
-    """Generate a simple passphrase using diceware."""
-    simple_pass = diceware.get_passphrase(num_words=num_words)
-    return simple_pass
+    """Generate simple passphrases by selecting random words from a word list file."""
+    try:
+        with open(pass_file, 'r') as f:
+            words = [word.strip().lower() for word in f.readlines() if word.strip()]
+
+        if not words:
+            print(f"Error: {pass_file} is empty")
+            return ""
+
+        if len(words) < num_words:
+            print(f"Warning: Word list only contains {len(words)} words, but {num_words} requested")
+
+        selected_words = random.choices(words, k=num_words)
+        passphrase = '-'.join(selected_words)
+        return passphrase
+
+    except FileNotFoundError:
+        print(f"Error: {pass_file} not found")
+        return ""
+    except Exception as e:
+        print(f"Error generating passphrase: {e}")
+        return ""
+
+
+def gen_username():
+    """Generate a username by selecting random words from the username word list file."""
+    try:
+        with open(uname_file, 'r') as f:
+            words = [word.strip().lower() for word in f.readlines() if word.strip()]
+
+        if not words:
+            print(f"Error: {uname_file} is empty")
+            return ""
+
+        selected_words = random.choices(words, k=2)
+        username = '-'.join(selected_words)
+        return username
+
+    except FileNotFoundError:
+        print(f"Error: {uname_file} not found")
+        return ""
+    except Exception as e:
+        print(f"Error generating username: {e}")
+        return ""
 
 
 def gen_hash(password):

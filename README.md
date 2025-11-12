@@ -12,6 +12,11 @@ This tool is intended exclusively for:
 Purpose
 shadowGen is a specialized tool designed to generate realistic Linux /etc/shadow file entries with SHA512 password hashes. The primary use case is for hash cracking training and practice, allowing security professionals and students to develop hash-breaking skills in a controlled, legal environment without compromising real systems.
 
+# Installation
+1. Ensure you have Python 3.7+.
+2. Install the required packages from requirements.txt
+3. Pull the repo
+
 # Features
 * **Two password generation modes**: Complex random passwords or simple word-based passphrases
 * **Automated username generation**: Usernames are generated from a customizable wordlist
